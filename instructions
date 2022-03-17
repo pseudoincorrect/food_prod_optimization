@@ -1,0 +1,28 @@
+
+install python (version 3.7)
+https://www.python.org/downloads/
+
+install conda (version 4.10.1)
+https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html
+
+update python path by adding to path environment variable :
+    - C:\Users\bmenezes\AppData\Local\Programs\Python\Python37\Scripts
+    - C:\Users\bmenezes\AppData\Local\Programs\Python\Python37
+    - C:\Users\bmenezes\Anaconda3\Scripts
+
+remove windows alias with setting : "Manage app execution aliases" in windows settings
+
+Create a virtual environment with virtualenv
+    $ virtualenv -p C:\Users\bmenezes\AppData\Local\Programs\Python\Python37-32\python.exe main_env  
+
+For Windows venv activation error:
+    $ Set-ExecutionPolicy Unrestricted -Scope Process
+
+activate the virtual environment (in "vision_optimization" folder)
+    $ .\virtualenvs\main_env\Scripts\activate
+
+run the main Scripts
+    $ python .\src\main.py
+
+installing package with pip (in virtualenv)
+    $ python -m pip install scipy
