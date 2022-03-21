@@ -1,4 +1,3 @@
-
 # Authors: Brenno C. Menezes, Mohammed Yaqot, Ashad Islam, and Robert E. Franzoi Junior
 # Date: Aug 30th, 2021
 # Language: Python 3.71
@@ -24,20 +23,7 @@ scb_ql_path = (base_path / "scb_ql.py").resolve()
 mock_scb_ql_path = (base_path / "mock_scb_ql.py").resolve()
 heights_path = (base_path / "../vision/heights.txt").resolve()
 
-parser = argparse.ArgumentParser()
-group = parser.add_mutually_exclusive_group()
-parser.add_argument("-s", "--simulate", action="store_true",
-                    help="Generate/Send robot commands")
-args = parser.parse_args()
-
-start = True
-
-# Read data / information required for initializing the algorithm
-exec(compile(
-    open(data_path, 'rb').read(),
-    data_path,
-    'exec'))
-
+COMMAND_REFRESH_INTERVAL = 60
 
 def extract_values_from_msg(msg: str):
     input_values = [float(i) for i in msg.split(',')]
@@ -51,7 +37,10 @@ def read_for_new_values_from_zmq(ser_cli: client.ZmqServerClient):
 
 
 class Actuate_Thread(threading.Thread):
-
+    '''
+    Class that will send new position to the robot each _timeDelta
+    positions can be refreshed/restarted 
+    '''
     def __init__(self, timeDelta):
         self._timeDelta = timeDelta
         self._restart = threading.Event()
@@ -88,6 +77,19 @@ def read_for_new_values_from_file():
         last_line = file.readline().decode()
     return extract_values_from_msg(last_line)
 
+###############################################################################
+# Start of the main program 
+
+parser = argparse.ArgumentParser()
+group = parser.add_mutually_exclusive_group()
+parser.add_argument("-s", "--simulate", action="store_true",
+                    help="Generate/Send robot commands")
+args = parser.parse_args()
+
+start = True
+
+# Read data / information required for initializing the algorithm
+exec(compile(open(data_path, 'rb').read(), data_path, 'exec'))
 
 ser_cli = client.ZmqServerClient()
 
@@ -97,36 +99,40 @@ t.daemon = True
 print("Starting sending command to robot")
 t.start()
 
+# On the first loop, robot command will be refresh without waiting
+intervalStart = 0
+
 while True:
-    for NSIM in range(0, 5):
-        inputs = read_for_new_values_from_zmq(ser_cli)
-        # inputs = read_for_new_values_from_file()
+    # Wait for new heights values
+    inputs = read_for_new_values_from_zmq(ser_cli)
+    
+    # if we updated too recently we will not run the rest of the loop,
+    # instead, we wait for new heights values
+    if (time.time() - intervalStart < COMMAND_REFRESH_INTERVAL):
+        continue
+        
+    intervalStart = time.time()
+      
+    # Input values sent to the algorithm (global variables)
+    SENSING_SIM[0][0] = inputs[0]
+    SENSING_SIM[0][1] = inputs[1]
+    SENSING_SIM[0][2] = inputs[2]
 
-        SENSING_SIM[0][0] = inputs[0]
-        SENSING_SIM[0][1] = inputs[1]
-        SENSING_SIM[0][2] = inputs[2]
+    ### Call Optimizing routine ###
+    # Inputs from the Optimizing routine are the outputs from the Sensing routine,
+    # which includes the inventories or amounts of each stockpile.
+    if args.simulate:
+        exec(compile(
+            open(mock_scb_ql_path, 'rb').read(),
+            mock_scb_ql_path,
+            'exec'))
+    else:
+        exec(compile(
+            open(scb_ql_path, 'rb').read(),
+            scb_ql_path,
+            'exec'))
 
-        print("SENSING_SIM[0][0]", SENSING_SIM[0][0])
-        print("SENSING_SIM[0][1]", SENSING_SIM[0][1])
-        print("SENSING_SIM[0][2]", SENSING_SIM[0][2])
-
-        ### Call Optimizing routine ###
-        # Inputs from the Optimizing routine are the outputs from the Sensing routine,
-        # which includes the inventories or amounts of each stockpile.
-        if args.simulate:
-            exec(compile(
-                open(mock_scb_ql_path, 'rb').read(),
-                mock_scb_ql_path,
-                'exec'))
-        else:
-            exec(compile(
-                open(scb_ql_path, 'rb').read(),
-                scb_ql_path,
-                'exec'))
-            
-        # for the first iteration and quickly send command to the robot
-        # without waiting for NSIM_MAX iterations
-        if start:
-            break
-
+    # Actuate the robot with the newly calculated position
     actuate_Thread.restart()
+
+###############################################################################
