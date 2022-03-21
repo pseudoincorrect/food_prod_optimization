@@ -1,8 +1,8 @@
-# Food Production chain Optimisation (Industry 4.0)
+# Food Production chain Optimization (Industry 4.0)
 
 Optimization of the flow in a robotized food production chain.
 
-System regrouping maching vision, optimization and robot control to optimizing the flow of items on a conveyor belt.
+System regrouping machine vision, optimization and robot control to optimizing the flow of items on a conveyor belt.
 
 <br/>
 
@@ -28,7 +28,7 @@ System regrouping maching vision, optimization and robot control to optimizing t
 - Data communication server (socket) to exchange data between processes
 
 ### 2) Optimization
-- Optimization of the robot positionning dependin (not only) of containers level and ingredients flow
+- Optimization of the robot positioning depending (not only) of containers level and ingredients flow
 
 - Timing of the command to be sent to the robot, provided by the optimization algorithm
 
@@ -53,7 +53,7 @@ System regrouping maching vision, optimization and robot control to optimizing t
 
 <br/>
 
-## Authors (Alphabetical order)
+## Authors (alphabetical order)
 - Ashhadul Islam (Ph.D Student)
 - Brenno Castrillon Menezes (Assistant Professor)
 - Maxime Clement (Software Engineer)
