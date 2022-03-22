@@ -53,7 +53,6 @@ presolver = windll.LoadLibrary("C:/IMPL/IMPLpresolver.dll")
 rtnstat = server.IMPLwriteheader()
 
 # Specify directory path
-# sweeping_path = "C:/Users/bmenezes/Desktop/Demo"
 sweeping_path = (data_folder_path / "sweeping").resolve()
 sweeping_path = str(sweeping_path)
 # IMPL expect backslashes
@@ -66,7 +65,7 @@ byt_fact                            =    bytes(str_fact, 'utf-8')
 byt_fact_results                    =    bytes(str_fact_results, 'utf-8')         
 fact                                =    c_char_p(byt_fact)  
 fact_results                        =    c_char_p(byt_fact_results)     
-# print("fact = ",                         str_fact) 		
-# print("fact_results = ",                 str_fact_results)
+print("fact = ",                         str_fact) 		
+print("fact_results = ",                 str_fact_results)
 
 
