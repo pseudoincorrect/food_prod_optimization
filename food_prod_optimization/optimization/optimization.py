@@ -71,15 +71,8 @@ class Actuate_Thread(threading.Thread):
     def actuate(self):
         if self._cnt >= NSIM_MAX:
             self._cnt = 0
-        # print()
-        # print("All solutionse are:")
-        # for i in range (SC_SIZE):
-        #     print(f"SOLUTIONS[{i}] = ", SOLUTIONS[i])
-        # print()
-        print()
-        print(f"SOLUTIONS[{self._cnt}] = ", SOLUTIONS[self._cnt])
+        print(f"Redirecting robot to stack number: ", SOLUTIONS[self._cnt])
         msg = SOLUTIONS[self._cnt]
-        print("msg = ", msg)
         ser_cli.push_command_msg(msg)
         self._cnt += 1
 
@@ -106,11 +99,7 @@ t.start()
 
 while True:
     for NSIM in range(0, 5):
-        # The sensing routine is continuously triggered.
-        # No inputs are required for the sensing routine.
-
         inputs = read_for_new_values_from_zmq(ser_cli)
-
         # inputs = read_for_new_values_from_file()
 
         SENSING_SIM[0][0] = inputs[0]
@@ -134,13 +123,7 @@ while True:
                 open(scb_ql_path, 'rb').read(),
                 scb_ql_path,
                 'exec'))
-
-        # Outputs from the Calculating routine are the active robot position
-        # at each instant of time : (SC_A, SC_B, SC_C).
-        # print("SC_A = ", SC_A)
-        # print("SC_B = ", SC_B)
-        # print("SC_C = ", SC_C)
-
+            
         # for the first iteration and quickly send command to the robot
         # without waiting for NSIM_MAX iterations
         if start:

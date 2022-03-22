@@ -11,4 +11,6 @@ What is the timestamp between command to be sent to the robot ?
 
 What timestamp between new input should we aim for ? (10sec, 1 minute)
 
-What is the order of the stacks in the SCB_QL code 
+What is the order of the stacks in the SCB_QL code  ?
+
+Do we need to restart the solution SC_ from 0 or from where we were stopped (self._cnt) ?

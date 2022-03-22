@@ -1,5 +1,5 @@
+# REQUIREMENTS
 
-## Requirements
 - A Windows 10 (or so) computer
 - IMPL installed on your computer
 - "model.torch" file in ".\food_prod_optimization\vision_model\"
@@ -11,7 +11,10 @@
 
 </br>
 
-## Python install 
+# INSTALLATION
+
+
+## Installing Python, Virtualenv and Conda
 
 Install python (version 3.7)
 https://www.python.org/downloads/
@@ -26,36 +29,84 @@ Update python path by adding to path environment variable :
 
 Remove windows alias with setting : "Manage app execution aliases" in windows settings
 
+Installing virtualenv with pip 
+``` console
+$ pip install virtualenv
+```
+
+</br>
+
+## Installing the vision program
+
+Create a conda environment
+``` console
+$ cd food_prod_optimization\food_prod_optimization\vision
+$ conda env create -f vision_conda_environment.yaml
+```
+
+</br>
+
+## Installing the optimization program
+
 Create a virtual environment with virtualenv
 ``` console
-$ virtualenv -p %AppData%\Local\Programs\Python\Python37\python.exe main_env  
+# Use absolute path, not %LocalAppData%
+$ virtualenv -p %LocalAppData%\Programs\Python\Python37\python.exe env  
 ```
 
-For Windows venv activation error:
+Activate the virtual environment
+and set execution policy (Windows venv activation error)
 ``` console
+$ cd food_prod_optimization\food_prod_optimization\optimization
 $ Set-ExecutionPolicy Unrestricted -Scope Process
+$ .\env\Scripts\activate
 ```
 
-Activate the virtual environment (in "vision_optimization" folder)
+Install necessary packages
 ``` console
-$ .\virtualenvs\main_env\Scripts\activate
-```
-
-Run the main Scripts
-``` console
-$ python .\src\main.py
-```
-
-Installing package with pip (in virtualenv)
-``` console
-$ python -m pip install scipy
+$ python -m pip install zmq
 ```
 
 Increase python stack size
 - Open a command prompt with administrator right
-- Navigate to your python install folder %AppData%\Local\Programs\Python\Python37
+- Navigate to your python install folder %LocalAppData%\Local\Programs\Python\Python37
 ``` console
 $ editbin /stack:5000000,5000000 excel.exe
+```
+
+</br>
+
+## Installing the robot arm program
+
+Create a virtual environment with virtualenv
+``` console
+# Use absolute path, not %LocalAppData%
+$ virtualenv -p %LocalAppData%\Programs\Python\Python37\python.exe env  
+```
+
+Activate the virtual environment
+and set execution policy (Windows venv activation error)
+``` console
+$ cd food_prod_optimization\food_prod_optimization\robot
+$ Set-ExecutionPolicy Unrestricted -Scope Process
+$ .\env\Scripts\activate
+```
+
+install necessary packages (local and online ones)
+``` console
+# move to the repo folder
+$ cd food_prod_optimization\food_prod_optimization\robot
+# unzip packages
+$ cd vendor
+$ Expand-Archive vendor.zip -DestinationPath .
+# move to the first local package and install it 
+$ cd cri
+$ pip install -e .
+# move to the second local package and install it
+$ cd ../cri_dobot
+$ pip install -e .
+# install ZeroMQ and Keyboard packages
+$ pip install zmq keyboard
 ```
 
 </br>
@@ -64,7 +115,11 @@ $ editbin /stack:5000000,5000000 excel.exe
 
 </br>
 
-## Run the vision program
+# USAGE 
+
+</br>
+
+## Running the vision program
 Open an Anaconda terminal
 ``` console
 $ cd food_prod_optimization\vision
@@ -72,16 +127,24 @@ $ conda activate vision_ai
 $ python vision.py
 ``` 
 
-## Run the optimization program
+</br>
+
+## Running the optimization program
 Open a powershell terminal
 ``` console
 $ cd food_prod_optimization\optimization
+$ Set-ExecutionPolicy Unrestricted -Scope Process
+$ .\env\Scripts\activate
 $ python optimization.py
 ``` 
 
-## Run the robot control program
+</br>
+
+## Running the robot control program
 Open a powershell terminal
 ``` console
-$ cd food_prod_optimization\robot
+$ cd food_prod_optimization\robot\robot
+$ Set-ExecutionPolicy Unrestricted -Scope Process
+$ .\env\Scripts\activate
 $ python robot_control.py
 ``` 

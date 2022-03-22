@@ -53,11 +53,13 @@ System regrouping maching vision, optimization and robot control to optimizing t
 
 <br/>
 
-## Authors
-- Dr. Brenno Castrillon Menezes
-- Dr. Robert Eduard Franzoi Junior
-- Shaymaa Fawzi M. Khalifa
-- Maxime Clement
+## Authors (Alphabetical order)
+- Ashhadul Islam (Ph.D Student)
+- Brenno Castrillon Menezes (Assistant Professor)
+- Maxime Clement (Software Engineer)
+- Mohammad Yaqot (Ph.D Student)
+- Robert Eduard Franzoi Junior (PostDoc)
+- Shaymaa Fawzi M. Khalifa (Software Engineer)
 
 ## Notable technologies used here
 - OpenCV
