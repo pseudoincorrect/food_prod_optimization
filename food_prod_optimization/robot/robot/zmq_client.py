@@ -6,21 +6,20 @@
 
 import zmq
 
-context = zmq.Context()
+commands_host = "tcp://localhost:5556"
 
-#  Socket to talk to server
-print("Connecting to hello world server…")
-socket = context.socket(zmq.REQ)
-socket.connect("tcp://localhost:8000")
+class ZmqClient():
+    def __init__(self):
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.REQ)
+        print("Connecting to", commands_host)
+        self.socket.connect(commands_host)
 
-#  Do 10 requests, waiting each time for a response
-def get_pos():
-    while True:
-        print("Sending request  …")
-        socket.send(b"ping")
-
-        #  Get the reply.
-        message = socket.recv()
-        pos = int.from_bytes(message, "big")
+    #  Do 10 requests, waiting each time for a response
+    def get_pos(self):
+        print("Sending request...")
+        self.socket.send_string("ping")
+        message = self.socket.recv_string()
+        pos = int(message)
         print("Received reply %s " % ( pos))
         return pos
