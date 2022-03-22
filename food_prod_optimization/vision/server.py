@@ -26,10 +26,10 @@ class ZmqServer():
                 res = "none"
             else:
                 try:
-                    res = self._q.get_nowait()   
+                    res = self._q.get_nowait()  
+                    print("Sending fresh data to Optimization program")
                 except queue.Empty:
                     res = "none"
-            print("Sending video inputs : ", res)
             self._socket.send_string(res)
             
     def push_msg(self, msg):

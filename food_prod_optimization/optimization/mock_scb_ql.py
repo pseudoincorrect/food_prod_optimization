@@ -13,8 +13,6 @@ val_2 = SENSING_SIM[NSIM][2]
 # SC_B =  array()
 # SC_C =  array()
 
-AM_I_EXPORTED = "yes you are"
-
 ROBOT_COMMAND = random.randint(0, 2)
 
 # print("        val_0 = ", val_0)

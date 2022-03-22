@@ -13,7 +13,7 @@ import re
 
 setting = c_char_p(("USELOGFILE").encode("utf-8")) 
 IMPLuselogfile = server.IMPLretrieveSETTING(setting)
-print("USELOGFILE = ",IMPLuselogfile)
+# print("USELOGFILE = ",IMPLuselogfile)
 
 # Initialize the environment (IMPL.set) and allocate the IMPL resource-entities (IMPL.mem) i.e., sets, lists,
 # catalogs, parameters, variables, constraints, derivatives, expressions and formulas.
@@ -24,16 +24,16 @@ print("USELOGFILE = ",IMPLuselogfile)
 
 flag = c_int(0)
 rtnstat = server.IMPLroot(fact,flag)
-print("Root Return Status = "+str(rtnstat))
+# print("Root Return Status = "+str(rtnstat))
 rtnstat = server.IMPLreserve(fact,IMPLall,flag)
-print("Reserve Return Status = "+str(rtnstat))
+# print("Reserve Return Status = "+str(rtnstat))
 
 # Get the RNNON setting.
 
 setting = c_char_p(("RNNON").encode("utf-8"))
 RNNON = -99999
 IMPLrnnon = RNNON #server.IMPLretrieveSETTING(setting)
-print("RNNON = ",IMPLrnnon)
+# print("RNNON = ",IMPLrnnon)
 
 # "Interface" to the base model-data using the IML file specified ("fact").
 
@@ -529,12 +529,14 @@ rtnstat = presolver.IMPLpresolver(fact_results,form,fit,filter,focus,factorizer,
 ######################
 
 if rtnstat == INNON:
-    print ("impl> %ERROR% - Invalid arguments.")
+    # print ("impl> %ERROR% - Invalid arguments.")
+    pass
 elif rtnstat > 0: 
-    print ("impl> %ERROR% - Invalid input = ") 
-    print (rtnstat)
+    # print ("impl> %ERROR% - Invalid input = ") 
+    # print (rtnstat)
+    pass
 elif rtnstat < 0: 
-    print ("impl> %ERROR% - Not all variables/constraints converged - see *.tdt file.")
+    # print ("impl> %ERROR% - Not all variables/constraints converged - see *.tdt file.")
     CONTOL=c_double(1e-6)
     rtnstat = server.IMPLstatics(fact_results,CONTOL)
     
@@ -543,7 +545,7 @@ endtime = time.process_time()
 
 setting = c_char_p(b"OBJVALUE")
 objvalue = server.IMPLretrieveSTATISTIC(setting)
-print("objvalue = ",objvalue)
+# print("objvalue = ",objvalue)
 #OBJ[sim] = objvalue
 
 # * Note that if the equality and inequality constraint closures are significant (say > 0.000001) then this is not
@@ -551,18 +553,16 @@ print("objvalue = ",objvalue)
 
 setting = c_char_p(b"ECLOSURE2")
 eclosure2 = server.IMPLretrieveSTATISTIC(setting)
-print("eclosure2 = ",eclosure2)
+# print("eclosure2 = ",eclosure2)
 
 setting = c_char_p(b"ICLOSURE2")
 iclosure2 = server.IMPLretrieveSTATISTIC(setting)
-print("iclosure2 = ",iclosure2)
+# print("iclosure2 = ",iclosure2)
 
 setting = c_char_p(b"STATUS")
 solverstatus = server.IMPLretrieveSIGNAL(setting)
-#if int(solverstatus) == IMPLoptimal:
-#  print("status = SOLVED")
-#else:
-#  print("status = NOT SOLVED")  
+#if int(solverstatus) == IMPLoptimal: print("status = SOLVED")
+#else: print("status = NOT SOLVED") 
 
 
 # Get the objective function terms where only the performance1 (1-norm, LP) (and penalties) is non-zero i.e., no profit and
@@ -572,8 +572,8 @@ solverstatus = server.IMPLretrieveSIGNAL(setting)
 ntp = c_int()
 ntf = c_int()
 interacter.IMPLretrieveT(byref(ntp),byref(ntf))
-print('ntp = ', ntp.value)
-print('ntf = ', ntf.value)
+# print('ntp = ', ntp.value)
+# print('ntf = ', ntf.value)
 
 profit = c_double()
 performance1 = c_double()
@@ -582,11 +582,11 @@ penalty = c_double()
 total = c_double() 
 
 interacter.IMPLretrieveOBJterms2(byref(profit),byref(performance1),byref(performance2),byref(penalty),byref(total))
-print ('Profit_ID = ',profit)
-print ('performance1_ID = ',performance1)
-print ('performance2_ID = ',performance2)
-print ('penalty_ID = ',penalty)
-print ('total_ID = ',total)
+# print ('Profit_ID = ',profit)
+# print ('performance1_ID = ',performance1)
+# print ('performance2_ID = ',performance2)
+# print ('penalty_ID = ',penalty)
+# print ('total_ID = ',total)
 
 profit = str(profit)
 performance1 = str(performance1)
@@ -634,16 +634,18 @@ for i in range (1,dthf+1):
     print("SC_C[",i,"] = ", SC_C[i])
 print()
 
+for i in range (SC_SIZE):
+    SOLUTIONS[i] = 0 if SC_A[i] else 1 if SC_B[i] else 2
 
 # Write a log message to the IMPL log file (*.ldt).
-print (' ')
+# print (' ')
 logmessage = c_char_p(("Iteration # "+str(NSIM+1)).encode("utf-8"))
 rtnstat = server.IMPLwritelog(logmessage)
 
 endtime = time.process_time()
 
-print(endtime)
-#print(OBJ)
+# print(endtime)
+# print(OBJ)
 
 # Write the IMPL export (*.exl) and data files (*.dta or *.adt).
 
