@@ -1,4 +1,4 @@
-# Food Production chain Optimization (Industry 4.0)
+# Food Production Chain Optimization (Industry 4.0)
 
 Optimization of the flow in a robotized food production chain.
 

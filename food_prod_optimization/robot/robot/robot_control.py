@@ -87,23 +87,20 @@ def main():
         # Execute the homing function. Note temp is not used by Dobot. Returned value is the last index ->
         # "queuedCmdIndex: If this command is added to the queue,
         # queuedCmdIndex indicates the index of this command in the queue. Otherwise, it is invalid."
-        if True:
-            current_pose = dType.GetPose(api)
-            print_position(api)
-            dType.SetQueuedCmdStartExec(api)
-            extend_arm_from_rest_position(api)
-            print()
-            lastIndex = dType.SetHOMECmd(api, temp=0, isQueued=0)[0]
-            # print("lastIndex", lastIndex)
-            dType.SetQueuedCmdStartExec(api)
-            wait_command_finish(api, lastIndex)
-            time.sleep(30)
-        else:
-            dType.SetQueuedCmdStartExec(api)
+        current_pose = dType.GetPose(api)
+        print_position(api)
+        dType.SetQueuedCmdStartExec(api)
+        extend_arm_from_rest_position(api)
+        print()
+        lastIndex = dType.SetHOMECmd(api, temp=0, isQueued=0)[0]
+        # print("lastIndex", lastIndex)
+        dType.SetQueuedCmdStartExec(api)
+        wait_command_finish(api, lastIndex)
+        time.sleep(30)
 
 
         # Get the current command index
-        lastIndex = currentIndex = dType.GetQueuedCmdCurrentIndex(api)[0]
+        lastIndex = dType.GetQueuedCmdCurrentIndex(api)[0]
 
         while True:
             new_pos = get_mock_position()

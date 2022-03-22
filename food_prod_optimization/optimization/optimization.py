@@ -19,8 +19,8 @@ import server_client as client
 
 base_path = Path(__file__).parent
 data_path = (base_path / "data.py").resolve()
-scb_ql_path = (base_path / "scb_ql.py").resolve()
-mock_scb_ql_path = (base_path / "mock_scb_ql.py").resolve()
+prediction_algo_path = (base_path / "prediction_algo.py").resolve()
+mock_prediction_algo_path = (base_path / "mock_prediction_algo.py").resolve()
 heights_path = (base_path / "../vision/heights.txt").resolve()
 
 COMMAND_REFRESH_INTERVAL = 60
@@ -123,13 +123,13 @@ while True:
     # which includes the inventories or amounts of each stockpile.
     if args.simulate:
         exec(compile(
-            open(mock_scb_ql_path, 'rb').read(),
-            mock_scb_ql_path,
+            open(mock_prediction_algo_path, 'rb').read(),
+            mock_prediction_algo_path,
             'exec'))
     else:
         exec(compile(
-            open(scb_ql_path, 'rb').read(),
-            scb_ql_path,
+            open(prediction_algo_path, 'rb').read(),
+            prediction_algo_path,
             'exec'))
 
     # Actuate the robot with the newly calculated position
