@@ -1,0 +1,4 @@
+# Problems encountered and how to solve them
+
+## Robot moving along the rail
+Go to DobotStudio and home the robot, and move the L+/L- to unlock the situation
