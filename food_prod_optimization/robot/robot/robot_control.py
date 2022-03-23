@@ -7,7 +7,7 @@ from zmq_client import ZmqClient
 
 # Calibration values
 Z_UP = 50
-Z_DOWN = -5
+Z_DOWN = -7
 X_VAL = 275
 
 # The three fixed points on the rail where the Dobot stops
@@ -25,6 +25,7 @@ CON_STR = {
 
 
 def connect_robot(api):
+    print("Don't forget to enable the rail in DobotStudio (to be fixed)")
     state = dType.ConnectDobot(api, "", 115200)[0]
     if state == dType.DobotConnect.DobotConnect_NoError:
         print("\nConnected to dobot\n")
@@ -112,14 +113,14 @@ def wait_command_finish(api, last_ind):
         time.sleep(2)
 
 
-def extend_arm_from_rest_position(api):
+def go_safer_position(api):
     positionL = dType.GetPoseL(api)[0]
     lastIndex = dType.SetPTPWithLCmd(
         api=api,
         ptpMode=1,
         x=250, y=0, z=130,
         rHead=0,
-        l=positionL,
+        l=positionL + 20,
         isQueued=0)[0]
     wait_command_finish(api, lastIndex)
 
@@ -128,7 +129,7 @@ def robot_homing(api):
     print_position(api)
     dType.SetQueuedCmdStartExec(api)
     # move the robot arm up
-    extend_arm_from_rest_position(api)
+    go_safer_position(api)
     # Async Motion Params Setting
     dType.SetHOMECmd(api, temp=0, isQueued=0)[0]
     time.sleep(30)
@@ -142,7 +143,20 @@ def robot_go_home(api):
     wait_command_finish(api, index)
 
 
-def move_to_position_alt(api, new_position):
+def robot_go_intermediate_pos(api):
+    position = dType.GetPose(api)
+    new_rail_pos = get_rail_pos(0)
+    # arm up
+    dType.SetPTPCmdEx(api=api, ptpMode=2,
+                      x=X_VAL - 70, y=0, z=Z_UP + 70,
+                      rHead=position[3], isQueued=1)
+    position = dType.GetPose(api)
+    dType.SetPTPWithLCmdEx(api=api, ptpMode=1,
+                           x=position[0], y=position[1], z=position[2],
+                           rHead=position[3], l=new_rail_pos, isQueued=1)
+
+
+def move_to_position(api, new_position):
     position = dType.GetPose(api)
     new_rail_pos = get_rail_pos(new_position)
     # arm up
@@ -160,7 +174,7 @@ def move_to_position_alt(api, new_position):
                       rHead=position[3], isQueued=1)
 
 
-def move_to_position(api, new_position):
+def move_to_position_without_up(api, new_position):
     position = dType.GetPose(api)
     new_rail_pos = get_rail_pos(new_position)
     # arm up
@@ -185,6 +199,8 @@ def parse_command_line_arguments():
 
 def stop_robot_and_exit(api):
     print("Exiting Dobot Control")
+    robot_go_intermediate_pos(api)
+    # move_to_position(api, 0)
     robot_go_home(api)
     dType.SetEMotor(api=api, index=0, isEnabled=1, speed=0, isQueued=1)
     dType.SetQueuedCmdForceStopExec(api)
@@ -209,7 +225,8 @@ def main():
 
     init_and_start_conveyor_belt(api)
 
-    move_to_position(api, 0)
+    robot_go_intermediate_pos(api)
+    # move_to_position(api, 0)
     time.sleep(5)
 
     # initialize last_pos variable to hold the latest Rail position

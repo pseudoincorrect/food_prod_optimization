@@ -146,5 +146,5 @@ Open a powershell terminal
 $ cd food_prod_optimization\robot\robot
 $ Set-ExecutionPolicy Unrestricted -Scope Process
 $ .\env\Scripts\activate
-$ python robot_control.py
+$ python robot_control.py --home 
 ``` 
