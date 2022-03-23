@@ -4,6 +4,7 @@
 #   Sends "Hello" to server, expects "World" back
 #
 
+import time
 import zmq
 
 commands_host = "tcp://localhost:5556"
@@ -17,9 +18,12 @@ class ZmqClient():
 
     #  Do 10 requests, waiting each time for a response
     def get_pos(self):
-        print("Sending request...")
-        self.socket.send_string("ping")
-        message = self.socket.recv_string()
+        message = "none"
+        while(message == "none"):
+            print("Sending request...")
+            self.socket.send_string("ping")
+            message = self.socket.recv_string()
+            print("Received reply %s " % ( message))
+            time.sleep(3)
         pos = int(message)
-        print("Received reply %s " % ( pos))
         return pos
