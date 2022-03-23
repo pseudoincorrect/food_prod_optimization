@@ -42,7 +42,7 @@ class ZmqServerClient():
                 except queue.Empty:
                     res ="none"
             print("Sending command response: %s" % res)
-            self._commands_socket.send_string(res)
+            self._commands_socket.send_string(str(res))
 
     def _inputs_request(self):
         while True:

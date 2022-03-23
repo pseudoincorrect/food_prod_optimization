@@ -61,7 +61,7 @@ int readPot(){
 
 void openAndClose(){
   open();
-  delay(200);
+  delay(100);
   close();
 }
 

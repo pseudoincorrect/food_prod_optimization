@@ -24,6 +24,8 @@ mock_prediction_algo_path = (base_path / "mock_prediction_algo.py").resolve()
 heights_path = (base_path / "../vision/heights.txt").resolve()
 
 COMMAND_REFRESH_INTERVAL = 60
+COMMAND_TIME_DELTA = 15
+
 
 def extract_values_from_msg(msg: str):
     input_values = [float(i) for i in msg.split(',')]
@@ -41,6 +43,7 @@ class Actuate_Thread(threading.Thread):
     Class that will send new position to the robot each _timeDelta
     positions can be refreshed/restarted 
     '''
+
     def __init__(self, timeDelta):
         self._timeDelta = timeDelta
         self._restart = threading.Event()
@@ -78,8 +81,10 @@ def read_for_new_values_from_file():
     return extract_values_from_msg(last_line)
 
 ###############################################################################
-# Start of the main program 
+# Start of the main program
 
+print("Run this script with \"--simulate (-s)\" option to: ",
+          "simulate heights without ZeroMQ")
 parser = argparse.ArgumentParser()
 group = parser.add_mutually_exclusive_group()
 parser.add_argument("-s", "--simulate", action="store_true",
@@ -93,7 +98,7 @@ exec(compile(open(data_path, 'rb').read(), data_path, 'exec'))
 
 ser_cli = client.ZmqServerClient()
 
-actuate_Thread = Actuate_Thread(3)
+actuate_Thread = Actuate_Thread(COMMAND_TIME_DELTA)
 t = threading.Thread(target=actuate_Thread.run)
 t.daemon = True
 print("Starting sending command to robot")
@@ -104,15 +109,17 @@ intervalStart = 0
 
 while True:
     # Wait for new heights values
-    inputs = read_for_new_values_from_zmq(ser_cli)
-    
+    if args.simulate:
+        inputs = [0, 0, 0]
+    else:
+        inputs = read_for_new_values_from_zmq(ser_cli)
     # if we updated too recently we will not run the rest of the loop,
     # instead, we wait for new heights values
     if (time.time() - intervalStart < COMMAND_REFRESH_INTERVAL):
         continue
-        
+
     intervalStart = time.time()
-      
+
     # Input values sent to the algorithm (global variables)
     SENSING_SIM[0][0] = inputs[0]
     SENSING_SIM[0][1] = inputs[1]
@@ -134,5 +141,7 @@ while True:
 
     # Actuate the robot with the newly calculated position
     actuate_Thread.restart()
+    if args.simulate:
+        time.sleep(60)
 
 ###############################################################################

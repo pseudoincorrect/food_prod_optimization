@@ -43,10 +43,10 @@ def print_position(api, short=True):
     positionRail = dType.GetPoseL(api)[0]
     if short:
         print("Position: ",
-              "\nx :", int(position[0]),
-              ", y :", int(position[1]),
-              ", z :", int(position[2]),
-              "\nrail :", int(positionRail),
+              "\nx:", int(position[0]),
+              "| y:", int(position[1]),
+              "| z:", int(position[2]),
+              "| rail:", int(positionRail),
               )
     else:
         print("Position: ",
@@ -210,22 +210,7 @@ def main():
     init_and_start_conveyor_belt(api)
 
     move_to_position(api, 0)
-    time.sleep(10)
-
-    stop_robot_and_exit(api)
-
-    move_to_position(api, 1)
-    time.sleep(10)
-    move_to_position(api, 2)
-    time.sleep(10)
-    move_to_position(api, 0)
-    time.sleep(10)
-    move_to_position(api, 2)
-    time.sleep(10)
-    move_to_position(api, 0)
-    time.sleep(10)
-
-    stop_robot_and_exit(api)
+    time.sleep(5)
 
     # initialize last_pos variable to hold the latest Rail position
     last_pos = 0
