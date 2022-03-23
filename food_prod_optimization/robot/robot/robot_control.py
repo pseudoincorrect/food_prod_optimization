@@ -28,12 +28,12 @@ def connect_robot(api):
     if state == dType.DobotConnect.DobotConnect_NoError:
         print("\nConnected to dobot\n")
     else:
-        print("Could not connect to robot")
-        exit()
+        print("Could not connect to robot, exiting program...")
+        sys.exit()
 
 
 def get_mock_position():
-    time.sleep(15)
+    time.sleep(10)
     return randrange(3)
 
 
@@ -53,17 +53,6 @@ def print_position(api):
           )
 
 
-def yes_or_no(question):
-    """ Get a y/n answer from the user
-    """
-    while "the answer is invalid":
-        reply = str(input(question+' (y/n): ')).lower().strip()
-        if reply[:1] == 'y':
-            return True
-        if reply[:1] == 'n':
-            return False
-
-
 def print_position(api):
     position = dType.GetPose(api)
     positionL = dType.GetPoseL(api)[0]
@@ -80,21 +69,21 @@ def print_position(api):
           )
 
 
-def get_rail_pos(new_pos):
-    if (new_pos == 0):
+def get_rail_pos(new_position):
+    if (new_position == 0):
         rail_pos = RAIL_POS_A
-    elif (new_pos == 1):
+    elif (new_position == 1):
         rail_pos = RAIL_POS_B
-    elif (new_pos == 2):
+    elif (new_position == 2):
         rail_pos = RAIL_POS_C
     return rail_pos
 
 
-def start_conveyor_belt(api):
+def init_and_start_conveyor_belt(api):
     STEP_PER_CIRCLE = 360.0 / 1.8 * 10.0 * 16.0
     MM_PER_CIRCLE = 3.1415926535898 * 36.0
     vel = float(20) * STEP_PER_CIRCLE / MM_PER_CIRCLE
-    # Set sliding rail velocity
+    # Set conveyor belt velocity
     dType.SetEMotor(api, 0, 1, int(vel), 1)
 
 
@@ -107,7 +96,6 @@ def init_robot_params(api):
     # Async Motion Params Setting
     dType.SetHOMEParams(api, R_HEAD_VAL, 0, Z_UP, 0, isQueued=0)
     dType.SetPTPLParams(api, 900, 200, 1)
-    
 
 
 def init_robot_params_alt(api):
@@ -161,11 +149,27 @@ def robot_go_home(api):
     dType.SetHOMECmd(api, temp=0, isQueued=0)[0]
     time.sleep(30)
 
+
+def move_to_position(api, new_position):
+    position = dType.GetPose(api)
+    new_rail_pos = get_rail_pos(new_position)
+    # arm up
+    dType.SetPTPCmdEx(api, 2, R_HEAD_VAL, 0, Z_UP, position[3], 1)
+    position = dType.GetPose(api)
+    dType.SetPTPWithLCmdEx(
+        api, 1, position[0], position[1], position[2],
+        position[3], new_rail_pos, 1)
+    # arm down
+    position = dType.GetPose(api)
+    dType.SetPTPCmdEx(api, 2, R_HEAD_VAL, 0,
+                      Z_DOWN, position[3], 1)
+
+
 def parse_command_line_arguments():
-    print("Run this script with \"--home or -m\" option to: ",
+    print("\nRun this script with \"--home or -m\" option to: ",
           " move the robot to home position")
     print("Run this script with \"--simulate or -s\" option to: ",
-          "simulate robot positions without ZeroMQ")
+          "simulate robot positions without ZeroMQ\n")
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--simulate", action="store_true",
                         help="Generate/Send robot commands")
@@ -174,57 +178,53 @@ def parse_command_line_arguments():
     return parser.parse_args()
 
 
+def stop_robot_and_exit(api):
+    print("Exiting Dobot Control")
+    dType.SetEMotor(api, 0, 1, 0, 1)
+    dType.SetQueuedCmdForceStopExec(api)
+    dType.SetQueuedCmdClear(api)
+    dType.DisconnectDobot(api)
+    print("Dobot disconnected !")
+    sys.exit()
+
+
 def main():
     args = parse_command_line_arguments()
     api = dType.load()
     connect_robot(api)
     zmq_client = ZmqClient()
 
-    init_robot_params(api)
-    # init_robot_params_alt(api)
-    
+    # init_robot_params(api)
+    init_robot_params_alt(api)
+
+    # command line argument --home or -m
     if args.home:
         robot_go_home(api)
-        
-    # start_conveyor_belt(api)
 
-    # exit()
+    init_and_start_conveyor_belt(api)
 
     # initialize last_pos variable to hold the latest Rail position
     last_pos = 0
 
     while True:
         try:
-            position = dType.GetPose(api)
-            
+            # command line argument --simulate or -s
             if args.simulate:
                 print("Simulating positions")
-                new_pos = get_mock_position()
+                new_position = get_mock_position()
             else:
                 print("Getting optimization algorithm")
-                new_pos = zmq_client.get_pos()
+                new_position = zmq_client.get_pos()
 
-            new_rail_pos = get_rail_pos(new_pos)
-            if (new_pos != last_pos):
-                # arm up
-                dType.SetPTPCmdEx(api, 2, R_HEAD_VAL, 0,
-                                  Z_UP, position[3], 1)
-                position = dType.GetPose(api)
-                dType.SetPTPWithLCmdEx(
-                    api, 1, position[0], position[1], position[2], position[3], new_rail_pos, 1)
-                # arm down
-                position = dType.GetPose(api)
-                dType.SetPTPCmdEx(api, 2, R_HEAD_VAL, 0,
-                                  Z_DOWN, position[3], 1)
-            last_pos = new_pos
+            print("moving robot to position", new_position)
+
+            if (new_position != last_pos):
+                move_to_position(api, new_position)
+
+            last_pos = new_position
+
         except KeyboardInterrupt:
-            print("Exiting Dobot Control")
-            dType.SetEMotor(api, 0, 1, 0, 1)
-            dType.SetQueuedCmdForceStopExec(api)
-            lastIndex = dType.SetQueuedCmdClear(api)
-            dType.DisconnectDobot(api)
-            print("Dobot disconnected !")
-            sys.exit()
+            stop_robot_and_exit(api)
 
 
 if __name__ == "__main__":
