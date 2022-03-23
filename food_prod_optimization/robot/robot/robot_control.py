@@ -6,14 +6,15 @@ import sys
 from zmq_client import ZmqClient
 
 # Calibration values
-Z_UP = 10
-Z_DOWN = -65
-R_HEAD_VAL = 300
+Z_UP = 50
+Z_DOWN = -5
+X_VAL = 275
 
 # The three fixed points on the rail where the Dobot stops
-RAIL_POS_A = 200
-RAIL_POS_B = 400
-RAIL_POS_C = 600
+RAIL_POS_HOME = 10
+RAIL_POS_A = 460
+RAIL_POS_B = RAIL_POS_A + 125
+RAIL_POS_C = RAIL_POS_B + 125
 
 
 CON_STR = {
@@ -37,44 +38,36 @@ def get_mock_position():
     return randrange(3)
 
 
-def print_position(api):
+def print_position(api, short=True):
     position = dType.GetPose(api)
-    positionL = dType.GetPoseL(api)[0]
-    print("Position: ",
-          "\nx           :", int(position[0]),
-          "\ny           :", int(position[1]),
-          "\nz           :", int(position[2]),
-          "\nrHead       :", int(position[3]),
-          "\njoint1Angle :", int(position[4]),
-          "\njoint2Angle :", int(position[5]),
-          "\njoint3Angle :", int(position[6]),
-          "\njoint4Angle :", int(position[7]),
-          "\rrail        :", int(positionL),
-          )
+    positionRail = dType.GetPoseL(api)[0]
+    if short:
+        print("Position: ",
+              "\nx :", int(position[0]),
+              ", y :", int(position[1]),
+              ", z :", int(position[2]),
+              "\nrail :", int(positionRail),
+              )
+    else:
+        print("Position: ",
+              "\nx           :", int(position[0]),
+              "\ny           :", int(position[1]),
+              "\nz           :", int(position[2]),
+              "\nrHead       :", int(position[3]),
+              "\njoint1Angle :", int(position[4]),
+              "\njoint2Angle :", int(position[5]),
+              "\njoint3Angle :", int(position[6]),
+              "\njoint4Angle :", int(position[7]),
+              "\rrail        :", int(positionRail),
+              )
 
 
-def print_position(api):
-    position = dType.GetPose(api)
-    positionL = dType.GetPoseL(api)[0]
-    print("Position: ",
-          "\nx           :", int(position[0]),
-          "\ny           :", int(position[1]),
-          "\nz           :", int(position[2]),
-          "\nrHead       :", int(position[3]),
-          "\njoint1Angle :", int(position[4]),
-          "\njoint2Angle :", int(position[5]),
-          "\njoint3Angle :", int(position[6]),
-          "\njoint4Angle :", int(position[7]),
-          "\rrail        :", int(positionL),
-          )
-
-
-def get_rail_pos(new_position):
-    if (new_position == 0):
+def get_rail_pos(position):
+    if (position == 0):
         rail_pos = RAIL_POS_A
-    elif (new_position == 1):
+    elif (position == 1):
         rail_pos = RAIL_POS_B
-    elif (new_position == 2):
+    elif (position == 2):
         rail_pos = RAIL_POS_C
     return rail_pos
 
@@ -84,7 +77,7 @@ def init_and_start_conveyor_belt(api):
     MM_PER_CIRCLE = 3.1415926535898 * 36.0
     vel = float(20) * STEP_PER_CIRCLE / MM_PER_CIRCLE
     # Set conveyor belt velocity
-    dType.SetEMotor(api, 0, 1, int(vel), 1)
+    dType.SetEMotor(api=api, index=0, isEnabled=1, speed=int(vel), isQueued=1)
 
 
 def init_robot_params(api):
@@ -94,8 +87,8 @@ def init_robot_params(api):
     dType.SetQueuedCmdClear(api)
     dType.GetQueuedCmdCurrentIndex(api)[0]
     # Async Motion Params Setting
-    dType.SetHOMEParams(api, R_HEAD_VAL, 0, Z_UP, 0, isQueued=0)
-    dType.SetPTPLParams(api, 900, 200, 1)
+    dType.SetHOMEParams(api=api, x=X_VAL, y=0, z=Z_UP, r=0, isQueued=0)
+    dType.SetPTPLParams(api=api, velocity=900, acceleration=200, isQueued=1)
 
 
 def init_robot_params_alt(api):
@@ -104,43 +97,34 @@ def init_robot_params_alt(api):
     # Clean Command Queue
     dType.SetQueuedCmdClear(api)
     # Async Motion Params Setting
-    dType.SetHOMEParams(api, 250, 0, 50, 0, isQueued=1)
+    dType.SetHOMEParams(api=api, x=250, y=0, z=50, r=0, isQueued=1)
     # Set the velocity and acceleration of the joint co-ordinate axis
-    dType.SetPTPJointParams(api, 100, 100, 100, 100,
-                            100, 100, 100, 100, isQueued=1)
+    dType.SetPTPJointParams(api=api,
+                            j1Velocity=100, j1Acceleration=100, j2Velocity=100,
+                            j2Acceleration=100, j3Velocity=100, j3Acceleration=100,
+                            j4Velocity=100, j4Acceleration=100, isQueued=1)
     # Set the velocity ratio and acceleration ratio in PTP mode
     dType.SetPTPCommonParams(api, 100, 100, isQueued=1)
 
 
-def wait_command_finish(api, lastCommandIndex):
-    print()
-    print("Waiting for command to execute")
-    while(lastCommandIndex == dType.GetQueuedCmdCurrentIndex(api)):
-        print("lastCommandIndex =", lastCommandIndex, ", currentIndex =",
-              dType.GetQueuedCmdCurrentIndex(api)[0])
+def wait_command_finish(api, last_ind):
+    while(last_ind == dType.GetQueuedCmdCurrentIndex(api)):
         time.sleep(2)
-    print("lastCommandIndex =", lastCommandIndex, ", currentIndex =",
-          dType.GetQueuedCmdCurrentIndex(api)[0])
-    time.sleep(3)
-    print("Command executed")
 
 
 def extend_arm_from_rest_position(api):
-    position = dType.GetPose(api)
     positionL = dType.GetPoseL(api)[0]
     lastIndex = dType.SetPTPWithLCmd(
         api=api,
         ptpMode=1,
-        x=250,
-        y=0,
-        z=130,
+        x=250, y=0, z=130,
         rHead=0,
         l=positionL,
         isQueued=0)[0]
     wait_command_finish(api, lastIndex)
 
 
-def robot_go_home(api):
+def robot_homing(api):
     print_position(api)
     dType.SetQueuedCmdStartExec(api)
     # move the robot arm up
@@ -150,19 +134,40 @@ def robot_go_home(api):
     time.sleep(30)
 
 
+def robot_go_home(api):
+    position = dType.GetPose(api)
+    index = dType.SetPTPWithLCmdEx(api=api, ptpMode=1,
+                                   x=X_VAL, y=0, z=Z_UP,
+                                   rHead=position[3], l=RAIL_POS_HOME, isQueued=1)[0]
+    wait_command_finish(api, index)
+
+
+def move_to_position_alt(api, new_position):
+    position = dType.GetPose(api)
+    new_rail_pos = get_rail_pos(new_position)
+    # arm up
+    dType.SetPTPCmdEx(api=api, ptpMode=2,
+                      x=X_VAL, y=0, z=Z_UP,
+                      rHead=position[3], isQueued=1)
+    position = dType.GetPose(api)
+    dType.SetPTPWithLCmdEx(api=api, ptpMode=1,
+                           x=position[0], y=position[1], z=position[2],
+                           rHead=position[3], l=new_rail_pos, isQueued=1)
+    # arm down
+    position = dType.GetPose(api)
+    dType.SetPTPCmdEx(api=api, ptpMode=2,
+                      x=X_VAL, y=0, z=Z_DOWN,
+                      rHead=position[3], isQueued=1)
+
+
 def move_to_position(api, new_position):
     position = dType.GetPose(api)
     new_rail_pos = get_rail_pos(new_position)
     # arm up
-    dType.SetPTPCmdEx(api, 2, R_HEAD_VAL, 0, Z_UP, position[3], 1)
     position = dType.GetPose(api)
-    dType.SetPTPWithLCmdEx(
-        api, 1, position[0], position[1], position[2],
-        position[3], new_rail_pos, 1)
-    # arm down
-    position = dType.GetPose(api)
-    dType.SetPTPCmdEx(api, 2, R_HEAD_VAL, 0,
-                      Z_DOWN, position[3], 1)
+    dType.SetPTPWithLCmdEx(api=api, ptpMode=1,
+                           x=X_VAL, y=0, z=Z_DOWN,
+                           rHead=position[3], l=new_rail_pos, isQueued=1)
 
 
 def parse_command_line_arguments():
@@ -180,7 +185,8 @@ def parse_command_line_arguments():
 
 def stop_robot_and_exit(api):
     print("Exiting Dobot Control")
-    dType.SetEMotor(api, 0, 1, 0, 1)
+    robot_go_home(api)
+    dType.SetEMotor(api=api, index=0, isEnabled=1, speed=0, isQueued=1)
     dType.SetQueuedCmdForceStopExec(api)
     dType.SetQueuedCmdClear(api)
     dType.DisconnectDobot(api)
@@ -199,9 +205,27 @@ def main():
 
     # command line argument --home or -m
     if args.home:
-        robot_go_home(api)
+        robot_homing(api)
 
     init_and_start_conveyor_belt(api)
+
+    move_to_position(api, 0)
+    time.sleep(10)
+
+    stop_robot_and_exit(api)
+
+    move_to_position(api, 1)
+    time.sleep(10)
+    move_to_position(api, 2)
+    time.sleep(10)
+    move_to_position(api, 0)
+    time.sleep(10)
+    move_to_position(api, 2)
+    time.sleep(10)
+    move_to_position(api, 0)
+    time.sleep(10)
+
+    stop_robot_and_exit(api)
 
     # initialize last_pos variable to hold the latest Rail position
     last_pos = 0

@@ -13,7 +13,7 @@ class ZmqClient():
     def __init__(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
-        print("Connecting to", commands_host)
+        print("ZeroMQ Client Connecting to", commands_host)
         self.socket.connect(commands_host)
 
     #  Do 10 requests, waiting each time for a response
