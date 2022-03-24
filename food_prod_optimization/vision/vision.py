@@ -32,6 +32,7 @@ def vision():
     while(True):
         ret = proc.process_frame()
         if ret:
+            print("stopping the program")
             break
 
     cap.release()

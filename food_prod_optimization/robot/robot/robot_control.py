@@ -25,7 +25,9 @@ CON_STR = {
 
 
 def connect_robot(api):
-    print("Don't forget to enable the rail in DobotStudio (to be fixed)")
+    print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("Do not forget to enable the rail in DobotStudio (to be fixed)")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
     state = dType.ConnectDobot(api, "", 115200)[0]
     if state == dType.DobotConnect.DobotConnect_NoError:
         print("\nConnected to dobot\n")

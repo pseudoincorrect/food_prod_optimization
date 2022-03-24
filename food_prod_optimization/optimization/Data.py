@@ -14,6 +14,8 @@ ROBOT_COMMAND = None
 # Size of the Solution Calculating Routine array
 SC_SIZE = 30
 
+NSIM = 1
+
 # Create array to store sensing data of each snapshot
 SENSING_SIM = []
 for i in range(0,NSIM_MAX):

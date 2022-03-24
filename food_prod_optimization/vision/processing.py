@@ -33,6 +33,12 @@ class Processing():
         self.img_reader = img_reader
         self.push_msg = push_msg
 
+    def sendData(self, heights):
+        timeStamp = str(time.time())
+        height = ",".join(str(item) for item in heights)
+        data_point = str(timeStamp)+","+str(height)+'\n'
+        self.push_msg(data_point)
+
     def getTopBottom(self, matrix: np.matrix):
         '''
         we start from the bottom
@@ -62,8 +68,6 @@ class Processing():
         # Capture frame-by-frame
         frame = self.img_reader()
 
-        print("******** Frame **********")
-
         Im = frame
         h, w, d = Im.shape
 
@@ -74,10 +78,9 @@ class Processing():
             newImg = Im[:, i*widthSm:(i+1)*widthSm]
             newImgs.append(newImg)
 
-        heights = [0, 0, 0]
+        heights = []
         counter = 0
         for Im in newImgs:
-            timeStamp = str(time.time())
             h, w, _ = Im.shape
 
             # Image larger then 840X840 are shrinked (this is not essential, but the
@@ -120,18 +123,16 @@ class Processing():
                     # print("nm is ", nm)
                     t, b = self.getTopBottom(Lb)
                     # print("top:", t, "bottom", b)
-                    print("Height in pixels:", b-t)
+                    print("container ", counter, "height :", b-t)
                     height = b-t
-                    heights[counter] = height
+                    heights.append(height)
+                    # heights[counter] = height
             counter += 1
 
         if len(heights) == PART_COUNT:
-            fileObject = open('heights.txt', 'a')
-            height = ",".join(str(item) for item in heights)
-            data_point = str(timeStamp)+","+str(height)+'\n'
-            fileObject.write(data_point)
-            fileObject.close()
-            self.push_msg(data_point)
+            self.sendData(heights)
+        else:
+            print("not all containers have been recognized")
 
         # display frames on the screen
         # for i in range(len(newImgs)):

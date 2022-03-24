@@ -39,9 +39,9 @@ class ZmqServerClient():
             else:
                 try:
                     res = self._commands_q.get_nowait()
+                    # print("Robot command sent: %s" % res)
                 except queue.Empty:
                     res ="none"
-            print("Sending command response: %s" % res)
             self._commands_socket.send_string(str(res))
 
     def _inputs_request(self):
@@ -50,8 +50,8 @@ class ZmqServerClient():
             self._inputs_socket.send_string("inputs?")
             #  Get the reply.
             message = self._inputs_socket.recv_string()
-            print("Received inputs : ", message)
             if message != "none":
+                print("inputs heights received: ", message)
                 self._inputs_q.put(message)
             time.sleep(3.0)
 
