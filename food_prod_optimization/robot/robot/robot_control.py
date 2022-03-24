@@ -24,10 +24,15 @@ CON_STR = {
 }
 
 
-def connect_robot(api):
-    print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+def print_warning_message():
+    print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     print("Do not forget to enable the rail in DobotStudio (to be fixed)")
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+    print("If nothing works, restart the robot manually and re-enable")
+    print("the rail in DobotStudio")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+    
+
+def connect_robot(api):
     state = dType.ConnectDobot(api, "", 115200)[0]
     if state == dType.DobotConnect.DobotConnect_NoError:
         print("\nConnected to dobot\n")
@@ -194,8 +199,8 @@ def parse_command_line_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--simulate", action="store_true",
                         help="Generate/Send robot commands")
-    parser.add_argument("-m", "--home", action="store_true",
-                        help="Move the robot to home position")
+    parser.add_argument("-n", "--nohome", action="store_true",
+                        help="bypass the robot homing")
     return parser.parse_args()
 
 
@@ -213,6 +218,8 @@ def stop_robot_and_exit(api):
 
 
 def main():
+    print_warning_message()
+    
     args = parse_command_line_arguments()
     api = dType.load()
     connect_robot(api)
@@ -221,8 +228,10 @@ def main():
     # init_robot_params(api)
     init_robot_params_alt(api)
 
-    # command line argument --home or -m
-    if args.home:
+    # command line argument --nohome or -n
+    if args.nohome:
+        pass
+    else:
         robot_homing(api)
 
     init_and_start_conveyor_belt(api)

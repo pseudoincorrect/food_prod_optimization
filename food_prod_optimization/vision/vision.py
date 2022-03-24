@@ -7,11 +7,19 @@ import cv2
 import argparse
 
 # To run this code, open a conda terminal and run:
-# $ cd %UserProfile%\Documents\food_prod_optimization\food_prod_optimization\vision && conda activate vision_ai 
+# $ cd %UserProfile%\Documents\food_prod_optimization\food_prod_optimization\vision && conda activate vision_ai
 # $ python vision.py
 
 
+def print_warning_message():
+    print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("Please connect the camera directly to the computer (without USH Hub)")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+
+
 def vision():
+    print_warning_message()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--simulate", action="store_true",
                         help="Generate/send simulated height values")
@@ -53,10 +61,10 @@ def simulate(push):
         if vals[i] > max_val:
             vals[i] = max_val
         msg = f'{timeStamp},{vals[0]},{vals[1]},{vals[2]}'
-        print("simulated heights:" ,msg)
-        print("stack 1:" ,vals[0])
-        print("stack 2:" ,vals[1])
-        print("stack 2:" ,vals[2])
+        print("simulated heights:", msg)
+        print("stack 1:", vals[0])
+        print("stack 2:", vals[1])
+        print("stack 2:", vals[2])
         push(msg)
         time.sleep(20.0 + randint(0, 20))
 

@@ -27,7 +27,7 @@ class ZmqServer():
             else:
                 try:
                     res = self._q.get_nowait()  
-                    print("Sending fresh data to Optimization program")
+                    print("Sending heights data to Optimization program")
                 except queue.Empty:
                     res = "none"
             self._socket.send_string(res)

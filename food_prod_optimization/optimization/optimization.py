@@ -5,6 +5,7 @@
 # This code runs the entire demo application including Sensing (S), Calculating (C), and Actuating (A)
 
 # cd $home\Documents\food_prod_optimization\food_prod_optimization\optimization
+# .\env\Scripts\activate
 # python optimization.py
 
 import argparse
